@@ -1,12 +1,9 @@
 const { app, Menu, dialog, BrowserWindow, ipcMain } = require('electron')
 const { populateTouchBar } = require('./touchbar')
 const { moveToEdge } = require('./bubbleWindow')
+const { settings } = require('./settings')
 const path = require('path');
 
-const settings = {
-  path: app.getPath('music') + '/ElectronTouchboard/',
-  replay: false
-}
 function buildMenu(onDirectoryChange) {
   const changeDirectory = () => dialog.showOpenDialog({
     defaultPath: settings.path,
