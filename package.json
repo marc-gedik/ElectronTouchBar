@@ -1,0 +1,20 @@
+{
+  "name": "electron-touchboard",
+  "version": "1.0.0",
+  "description": "Electron Touchboard",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/marc-gedik/ElectronTouchboard",
+  "keywords": [
+    "Electron",
+    "soundboard",
+    "touchbar"
+  ],
+  "author": "GitHub",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^12.0.4"
+  }
+}
