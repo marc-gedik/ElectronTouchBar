@@ -4,7 +4,8 @@
   "description": "Electron Touchboard",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "repository": "https://github.com/marc-gedik/ElectronTouchboard",
   "keywords": [
@@ -15,6 +16,14 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^12.0.4"
+    "electron": "^13.1.2",
+    "electron-builder": "^22.11.7"
+  },
+  "build": {
+    "productName": "ElectronTouchboard",
+    "files": [
+      "**/*",
+      "assets/"
+    ]
   }
 }
