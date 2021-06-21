@@ -5,19 +5,26 @@ const path = require('path');
 const util = require('util')
 const { exec } = require("child_process");
 
-function chunck(array, size) {
-  let chuncks = [];
-  for (var i = 0; i < array.length; i += size) {
-    chuncks.push(array.slice(i, i + size));
+function chunck(array, size, _ifExceed) {
+  const ifExceed = _ifExceed || size
+  if (array.length > ifExceed) {
+    let chuncks = [];
+    for (var i = 0; i < array.length; i += size) {
+      chuncks.push(array.slice(i, i + size));
+    }
+    return chuncks
+  } else {
+    return [array]
   }
-  return chuncks
 }
 
 function createSoundButton(settings, filepath) {
   let playing = null
   const name = path.parse(filepath).name
+  const [_, index, label] = name.match(/(^\d*)(.*)/)
   return {
-    label: name.substring(1),
+    index: index || 0,
+    label: label,
     click: () => {
       if (playing && !settings.replay) {
         exec('kill ' + playing)
@@ -44,24 +51,31 @@ async function populateTouchBar(window, settings) {
     const filepath = settings.path + filename
     const playable = await execAsync('afplay -v 0 -t 0.1 ' + filepath).catch(err => null)
     return playable && createSoundButton(settings, filepath)
-  }))).flatMap(it => it ? [it] : []);
+  })))
+  .flatMap(it => it ? [it] : [])
+  .sort((a, b) => a.index - b.index);
 
-  const chunks = chunck(all, 8)
+  const chunks = chunck(all, 8, 11)
+  const multiChunks = i => chunks.length > 1 ?
+    [
+      new TouchBarSpacer({ size: "flexible" }),
+      new TouchBarSegmentedControl({
+        mode: "buttons",
+        segments: [
+          { label: "<", enabled: chunks[i - 1] },
+          { label: ">", enabled: chunks[i + 1] }
+        ],
+        change: selected => selected ? setTouchBar(i + 1) : setTouchBar(i - 1)
+      })
+    ] : [];
+
   const setTouchBar = (i) => {
     window.setTouchBar(
       new TouchBar({
-        items: [
+        items: [].concat(
           createSoundsSegment(chunks[i]),
-          new TouchBarSpacer({ size: "flexible" }),
-          new TouchBarSegmentedControl({
-            mode: "buttons",
-            segments: [
-              { label: "<", enabled: chunks[i - 1] },
-              { label: ">", enabled: chunks[i + 1] }
-            ],
-            change: selected => selected ? setTouchBar(i + 1) : setTouchBar(i - 1)
-          })
-        ]
+          multiChunks(i)
+        )
       })
     )
   }
