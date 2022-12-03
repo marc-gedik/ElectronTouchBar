@@ -10,7 +10,8 @@ function buildMenu(onDirectoryChange) {
     properties: ['openDirectory']
   }).then(function (fileObj) {
     if (!fileObj.canceled) {
-      onDirectoryChange(fileObj.filePaths[0] + '/')
+        settings.path = fileObj.filePaths[0] + '/'
+        onDirectoryChange()
     }
   })
   
@@ -41,7 +42,7 @@ app.whenReady().then(() => {
       preload: path.join(__dirname, 'preload.js'),
     }
   })
-  const menu = buildMenu(dir => populateTouchBar(window, dir))
+  const menu = buildMenu(() => populateTouchBar(window, settings))
   ipcMain.on('mouseup', () => moveToEdge(window))
   ipcMain.on('contextmenu', () => menu.popup())
   moveToEdge(window)
