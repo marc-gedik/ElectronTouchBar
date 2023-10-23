@@ -1,5 +1,5 @@
-const { TouchBar } = require('electron')
-const { TouchBarSpacer, TouchBarSegmentedControl } = TouchBar
+const { TouchBar, nativeImage } = require('electron')
+const { TouchBarSpacer, TouchBarSegmentedControl, TouchBarScrubber, TouchBarLabel } = TouchBar
 const fs = require('fs');
 const path = require('path');
 const util = require('util')
@@ -29,7 +29,11 @@ function createSoundButton(settings, filepath) {
       if (playing && !settings.replay) {
         exec('kill ' + playing)
       } else {
-        playing = exec('afplay ' + filepath, () => playing = null).pid
+        exec('afplay -v 0 -t 0.1 ' + filepath)
+        setTimeout(() => {
+          playing = exec('afplay ' + filepath, () => playing = null).pid
+        }, 100);
+        
       }
     }
   }
@@ -47,6 +51,9 @@ function createSoundsSegment(items) {
 const execAsync = util.promisify(exec)
 
 async function populateTouchBar(window, settings) {
+  window.setTouchBar(
+    new TouchBar({items: [new TouchBarLabel({label: "Loading..."})]})
+    )
   const all = (await Promise.all(fs.readdirSync(settings.path).map(async filename => {
     const filepath = settings.path + filename
     const playable = await execAsync('afplay -v 0 -t 0.1 ' + filepath).catch(err => null)
@@ -70,12 +77,22 @@ async function populateTouchBar(window, settings) {
     ] : [];
 
   const setTouchBar = (i) => {
+    settings.dense ? 
     window.setTouchBar(
       new TouchBar({
         items: [].concat(
           createSoundsSegment(chunks[i]),
           multiChunks(i)
         )
+      })
+    ) :
+    window.setTouchBar(
+      new TouchBar({
+        items: [new TouchBarScrubber({items: all, mode: "fixed",
+        highlight: (i) => {
+          all[i].click()
+        }})],
+        
       })
     )
   }
